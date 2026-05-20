@@ -13,8 +13,11 @@
     <script>
         async function enviarVoto(respostaEscolhida) {
             const status = document.getElementById('status');
+            status.innerText = "Enviando voto...";
             try {
-                const res = await fetch('postgresql://enquete_user:xkpEcHwB9cIqBymLshSI3zehv1mlfEU5@dpg-d86f1e6k1jcs73d0l7r0-a.virginia-postgres.render.com/enquete', {
+                // Aqui vai a URL de onde o seu server.js estará rodando
+                // Para testar no seu PC, use 'http://localhost:3000/votar'
+                const res = await fetch('http://localhost:3000/votar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ resposta: respostaEscolhida })
@@ -22,7 +25,7 @@
                 const data = await res.json();
                 status.innerText = res.ok ? "Voto computado!" : data.erro;
             } catch (e) {
-                status.innerText = "Erro ao conectar.";
+                status.innerText = "Erro ao conectar ao servidor.";
             }
         }
     </script>
