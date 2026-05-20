@@ -13,15 +13,17 @@
     <script>
         async function enviarVoto(respostaEscolhida) {
             const status = document.getElementById('status');
-            status.innerText = "Enviando voto...";
+            status.innerText = "Enviando...";
+            
             try {
-                // Aqui vai a URL de onde o seu server.js estará rodando
-                // Para testar no seu PC, use 'http://localhost:3000/votar'
-                const res = await fetch('http://localhost:3000/votar', {
+                // IMPORTANTE: Aqui vai a URL do seu SERVIDOR BACKEND, e não do banco.
+                // Se o HTML e o Server estiverem no mesmo lugar, basta '/votar'
+                const res = await fetch('https://SUA-URL-DO-BACKEND.railway.app/votar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ resposta: respostaEscolhida })
                 });
+                
                 const data = await res.json();
                 status.innerText = res.ok ? "Voto computado!" : data.erro;
             } catch (e) {
