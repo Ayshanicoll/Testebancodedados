@@ -4,7 +4,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 
 const app = express();
-app.use(cors({ origin: '*' })); // Permite que o GitHub Pages envie votos
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const pool = new Pool({
@@ -12,7 +12,6 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Inicialização da tabela
 pool.query(`
     CREATE TABLE IF NOT EXISTS votos (
         id SERIAL PRIMARY KEY,
