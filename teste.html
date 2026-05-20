@@ -3,177 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enquete Simples</title>
+    <title>Enquete Rápida</title>
     <style>
+        /* CSS: Estilizando a página para ficar moderna e centralizada */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
-        .poll-container {
-            background-color: #ffffff;
-            padding: 30px;
+
+        .poll-card {
+            background-color: white;
+            padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            width: 350px;
+            max-width: 400px;
+            width: 100%;
         }
-        h2 {
+
+        h1 {
             color: #333;
-            margin-bottom: 25px;
+            font-size: 24px;
+            margin-bottom: 30px;
         }
-        .btn-group {
+
+        .options-container {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
+            gap: 20px;
+            justify-content: center;
         }
-        button {
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
+
+        .btn-vote {
+            background-color: #007bff;
+            color: white;
             border: none;
+            padding: 12px 30px;
+            font-size: 18px;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: background-color 0.3s, transform 0.1s;
+            flex: 1;
         }
-        button:active {
-            transform: scale(0.95);
+
+        .btn-vote:hover:not(:disabled) {
+            background-color: #0056b3;
+            transform: translateY(-2px);
         }
-        .btn-yes { background-color: #2ecc71; color: white; }
-        .btn-yes:hover { background-color: #27ae60; }
-        .btn-no { background-color: #e74c3c; color: white; }
-        .btn-no:hover { background-color: #c0392b; }
-        
+
+        .btn-vote:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        /* Estilo para quando o botão for desativado (já votou) */
+        .btn-vote:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            color: #666;
+        }
+
         .message {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-top: 15px;
-            display: none;
+            margin-top: 25px;
+            font-size: 16px;
+            color: #28a745;
+            font-weight: bold;
+            display: none; /* Escondido por padrão */
         }
-        .results {
-            display: none;
-            margin-top: 20px;
-            text-align: left;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .result-bar {
-            height: 20px;
-            background-color: #3498db;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            color: white;
-            padding-left: 10px;
-            font-size: 12px;
-            line-height: 20px;
-            transition: width 0.5s ease;
+
+        .error {
+            color: #dc3545;
         }
     </style>
 </head>
 <body>
 
-<div class="poll-container">
-    <h2 id="poll-question">Você está bem?</h2>
-    
-    <div id="poll-actions" class="btn-group">
-        <button class="btn-yes" onclick="enviarVoto('sim')">Sim</button>
-        <button class="btn-no" onclick="enviarVoto('nao')">Não</button>
+    <div class="poll-card">
+        <h1>Você está bem?</h1>
+        
+        <div class="options-container" id="opcoes">
+            <button class="btn-vote" data-resposta="sim">Sim</button>
+            <button class="btn-vote" data-resposta="nao">Não</button>
+        </div>
+
+        <div id="mensagem" class="message"></div>
     </div>
 
-    <div id="poll-message" class="message"></div>
+    <script>
+        // JavaScript: A lógica e a "inteligência" do Front-end
+        document.addEventListener('DOMContentLoaded', () => {
+            const botoes = document.querySelectorAll('.btn-vote');
+            const areaMensagem = document.getElementById('mensagem');
 
-    <div id="poll-results" class="results">
-        <h3>Resultados atuais:</h3>
-        <p>Sim: <span id="count-sim">0</span> votos</p>
-        <div id="bar-sim" class="result-bar" style="width: 0%;"></div>
-        <p>Não: <span id="count-nao">0</span> votos</p>
-        <div id="bar-nao" class="result-bar" style="width: 0%;"></div>
-    </div>
-</div>
-
-<script>
-    // URL da sua API/Ponte (mude para a URL do seu servidor real se necessário)
-    const API_URL = 'http://localhost:3000/votar';
-    const STATUS_URL = 'http://localhost:3000/resultados';
-
-    // Ao carregar a página, verifica se este navegador já votou
-    window.onload = function() {
-        if (localStorage.getItem('jaVotouEnqueteBem')) {
-            exibirJaVotou();
-            carregarResultados();
-        }
-    };
-
-    function enviarVoto(opcao) {
-        // Dupla checagem no front-end para evitar cliques rápidos ou burlar pelo console
-        if (localStorage.getItem('jaVotouEnqueteBem')) {
-            alert('Você já votou nesta enquete!');
-            return;
-        }
-
-        // Envia o voto para o servidor (Back-end)
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ voto: opcao })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Guarda no navegador que o usuário já votou
-                localStorage.setItem('jaVotouEnqueteBem', 'true');
-                exibirJaVotou();
-                carregarResultados();
-            } else {
-                mostrarMensagem('Erro ao computar o voto. Tente novamente.', '#e74c3c');
+            // 1. Verifica se o usuário já votou olhando o localStorage do navegador
+            if (localStorage.getItem('voto_registrado')) {
+                bloquearEnquete("Você já votou nesta enquete. Obrigado!");
             }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            mostrarMensagem('Não foi possível conectar ao servidor.', '#e74c3c');
+
+            // 2. Adiciona a ação de clique nos botões
+            botoes.forEach(botao => {
+                botao.addEventListener('click', async (evento) => {
+                    // Pega a resposta escolhida (sim ou nao) do botão clicado
+                    const respostaEscolhida = evento.target.getAttribute('data-resposta');
+
+                    // ==========================================
+                    // AQUI ENTRARÁ A COMUNICAÇÃO COM O BACK-END
+                    // Quando o back-end estiver pronto, vamos usar a função fetch() 
+                    // para enviar a "respostaEscolhida" para o servidor.
+                    // ==========================================
+
+                    // Por enquanto, vamos simular que deu tudo certo:
+                    
+                    // 3. Salva no computador da pessoa que ela já votou
+                    localStorage.setItem('voto_registrado', 'true');
+                    
+                    // 4. Mostra a mensagem de sucesso e bloqueia os botões
+                    bloquearEnquete(`Voto "${respostaEscolhida.toUpperCase()}" computado com sucesso!`);
+                });
+            });
+
+            // Função para desativar a enquete
+            function bloquearEnquete(mensagemTexto) {
+                botoes.forEach(b => b.disabled = true);
+                areaMensagem.textContent = mensagemTexto;
+                areaMensagem.style.display = 'block'; // Mostra a mensagem
+            }
         });
-    }
-
-    function exibirJaVotou() {
-        document.getElementById('poll-actions').style.display = 'none';
-        mostrarMensagem('Obrigado! Seu voto já foi registrado neste navegador.', '#27ae60');
-    }
-
-    function mostrarMensagem(texto, cor) {
-        const msgDiv = document.getElementById('poll-message');
-        msgDiv.innerText = texto;
-        msgDiv.style.color = cor;
-        msgDiv.style.display = 'block';
-    }
-
-    function carregarResultados() {
-        fetch(STATUS_URL)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('count-sim').innerText = data.sim;
-            document.getElementById('count-nao').innerText = data.nao;
-            
-            const total = data.sim + data.nao;
-            if (total > 0) {
-                const pctSim = ((data.sim / total) * 100).toFixed(1);
-                const pctNao = ((data.nao / total) * 100).toFixed(1);
-                
-                document.getElementById('bar-sim').style.width = pctSim + '%';
-                document.getElementById('bar-sim').innerText = pctSim + '%';
-                document.getElementById('bar-nao').style.width = pctNao + '%';
-                document.getElementById('bar-nao').innerText = pctNao + '%';
-            }
-            document.getElementById('poll-results').style.opacity = 0;
-            document.getElementById('poll-results').style.display = 'block';
-            setTimeout(() => document.getElementById('poll-results').style.opacity = 1, 50);
-        })
-        .catch(err => console.error('Erro ao buscar resultados:', err));
-    }
-</script>
+    </script>
 
 </body>
 </html>
