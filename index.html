@@ -13,12 +13,14 @@
     <script>
         async function enviarVoto(respostaEscolhida) {
             const status = document.getElementById('status');
-            status.innerText = "Enviando...";
+            status.innerText = "Computando voto...";
             
             try {
-                // IMPORTANTE: Aqui vai a URL do seu SERVIDOR BACKEND, e não do banco.
-                // Se o HTML e o Server estiverem no mesmo lugar, basta '/votar'
-                const res = await fetch('https://SUA-URL-DO-BACKEND.railway.app/votar', {
+                // SUBSTITUA ABAIXO PELA URL DO SEU BACKEND QUANDO COLOCAR ELE ONLINE (Ex: Render)
+                // Enquanto testa localmente ou não tem a URL, pode usar 'http://localhost:3000/votar'
+                const URL_BACKEND = 'https://sua-api-no-render.onrender.com/votar'; 
+
+                const res = await fetch(URL_BACKEND, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ resposta: respostaEscolhida })
