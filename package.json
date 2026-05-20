@@ -1,7 +1,6 @@
 {
-  "name": "enquete-backend",
+  "name": "backend-enquete",
   "version": "1.0.0",
-  "description": "Backend para a enquete de sim ou nao",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
